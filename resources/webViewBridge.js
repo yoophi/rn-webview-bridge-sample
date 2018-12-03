@@ -1,87 +1,88 @@
-(function(){
+(function () {
 
-	var promiseChain = Promise.resolve();
+  var promiseChain = Promise.resolve();
 
-	var callbacks = {};
+  var callbacks = {};
 
-	var init = function() {
+  var init = function () {
 
-		const guid = function() {
-			function s4() {
-				return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-			}
-			return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
-		}
+    const guid = function () {
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+      }
 
-		window.webViewBridge = {
-			/**
-			 * send message to the React-Native WebView onMessage handler
-			 * @param targetFunc - name of the function to invoke on the React-Native side
-			 * @param data - data to pass
-			 * @param success - success callback
-			 * @param error - error callback
-			 */
-			send: function(targetFunc, data, success, error) {
+      return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
+    }
 
-				var msgObj = {
-					targetFunc: targetFunc,
-					data: data || {}
-				};
+    window.webViewBridge = {
+      /**
+       * send message to the React-Native WebView onMessage handler
+       * @param targetFunc - name of the function to invoke on the React-Native side
+       * @param data - data to pass
+       * @param success - success callback
+       * @param error - error callback
+       */
+      send: function (targetFunc, data, success, error) {
 
-				if (success || error) {
-					msgObj.msgId = guid();
-				}
+        var msgObj = {
+          targetFunc: targetFunc,
+          data: data || {}
+        };
 
-				var msg = JSON.stringify(msgObj);
+        if (success || error) {
+          msgObj.msgId = guid();
+        }
 
-				promiseChain = promiseChain.then(function () {
-					return new Promise(function (resolve, reject) {
-						console.log("sending message " + msgObj.targetFunc);
+        var msg = JSON.stringify(msgObj);
 
-						if (msgObj.msgId) {
-							callbacks[msgObj.msgId] = {
-								onsuccess: success,
-								onerror: error
-							};
-						}
+        promiseChain = promiseChain.then(function () {
+          return new Promise(function (resolve, reject) {
+            console.log("sending message " + msgObj.targetFunc);
 
-						window.postMessage(msg);
+            if (msgObj.msgId) {
+              callbacks[msgObj.msgId] = {
+                onsuccess: success,
+                onerror: error
+              };
+            }
 
-						resolve();
-					})
-				}).catch(function (e) {
-					console.error('rnBridge send failed ' + e.message);
-				});
-			},
+            window.postMessage(msg);
+
+            resolve();
+          })
+        }).catch(function (e) {
+          console.error('rnBridge send failed ' + e.message);
+        });
+      },
 
 
-		};
+    };
 
-		window.document.addEventListener('message', function(e) {
-			console.log("message received from react native");
+    window.document.addEventListener('message', function (e) {
+      console.log("message received from react native");
 
-			var message;
-			try {
-				message = JSON.parse(e.data)
-			}
-			catch(err) {
-				console.error("failed to parse message from react-native " + err);
-				return;
-			}
+      var message;
+      try {
+        message = JSON.parse(e.data)
+      }
+      catch (err) {
+        console.error("failed to parse message from react-native " + err);
+        return;
+      }
 
-			//trigger callback
-			if (message.args && callbacks[message.msgId]) {
-				if (message.isSuccessfull) {
-					callbacks[message.msgId].onsuccess.apply(null, message.args);
-				}
-				else {
-					callbacks[message.msgId].onerror.apply(null, message.args);
-				}
-				delete callbacks[message.msgId];
-			}
+      //trigger callback
+      if (message.args && callbacks[message.msgId]) {
+        if (message.isSuccessfull) {
+          callbacks[message.msgId].onsuccess.apply(null, message.args);
+        }
+        else {
+          callbacks[message.msgId].onerror.apply(null, message.args);
+        }
+        delete callbacks[message.msgId];
+      }
 
-		});
-	};
+    });
+  };
 
-	init();
+  init();
 }());
