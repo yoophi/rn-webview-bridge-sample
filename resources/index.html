@@ -7,12 +7,6 @@
     <meta name="viewport" content="width=320, user-scalable=no">
     <script src="webViewBridge.js"></script>
     <style type="text/css">
-        body {
-            display: flex;
-            background: azure;
-            justify-content: center;
-            align-content: center;
-        }
         button {
             text-align: center;
             align-self: center;
@@ -21,18 +15,35 @@
 </head>
 <body>
 <div id="container">
-    <button id="button" onclick="clickHandler();" >Send to RN</button>
+    <div>
+        <input id="text" />
+    </div>
+    <div>
+    <button id="button" onclick="clickHandler();">Send to RN</button>
+    <button id="button2" onclick="showAlert();">Show Alert</button>
+    </div>
 </div>
 <script>
-    window.counter = 0;
-    function clickHandler() {
-		window.counter++;
-        window.webViewBridge.send('handleDataReceived', window.counter, function(res) {
-            window.document.getElementById("button").setAttribute("style", "background-color: " + res);
-        }, function(err) {
-			window.document.getElementById("container").setAttribute("style", "background-color: " + err);
-        });
-    }
+  window.counter = 0;
+
+  function clickHandler() {
+    window.counter++;
+    window.webViewBridge.send('handleDataReceived', window.counter, function (res) {
+      window.document.getElementById("button").setAttribute("style", "background-color: " + res);
+    }, function (err) {
+      window.document.getElementById("container").setAttribute("style", "background-color: " + err);
+    });
+  }
+
+  function showAlert() {
+    var txt = document.getElementById('text').value
+
+    window.webViewBridge.send('handleNativeAlert', txt, function (res) {
+      window.document.getElementById("button2").setAttribute("style", "background-color: " + res);
+    }, function (err) {
+      window.document.getElementById("button2").setAttribute("style", "background-color: " + err);
+    });
+  }
 </script>
 
 </body>

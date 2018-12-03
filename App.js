@@ -4,8 +4,8 @@
  * @flow
  */
 
-import React, { Component } from "react";
-import { StyleSheet, Text, View, WebView } from "react-native";
+import React, {Component} from "react";
+import {Alert, StyleSheet, Text, View, WebView} from "react-native";
 
 export default class App extends Component<{}> {
   constructor(props) {
@@ -27,6 +27,14 @@ export default class App extends Component<{}> {
     this.myWebView.postMessage(JSON.stringify(msgData));
   }
 
+  handleNativeAlert = (msgData) => {
+    console.log(msgData)
+    Alert.alert('message', msgData.data);
+    msgData.isSuccessfull = true;
+    msgData.args = ['ok'];
+    this.myWebView.postMessage(JSON.stringify(msgData));
+  }
+
   onWebViewMessage(event) {
     console.log("Message received from webview");
 
@@ -41,6 +49,9 @@ export default class App extends Component<{}> {
     switch (msgData.targetFunc) {
       case "handleDataReceived":
         this[msgData.targetFunc].apply(this, [msgData]);
+        break;
+      case "handleNativeAlert":
+        this[msgData.targetFunc](msgData);
         break;
     }
   }
